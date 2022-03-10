@@ -13,12 +13,24 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('iCanNameThisAnything') }}">About</a>
                 </li>
+
+                {% if current_user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('ig.createPost') }}">Create Post</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('auth.logMeOut') }}">Log Out</a>
+                </li>
+
+                {% else %}
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('auth.logMeIn') }}">Sign In</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('auth.signMeUp') }}">Sign Up</a>
                 </li>
+                {% endif %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
@@ -34,7 +46,7 @@
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">{{ current_user.username }}</a>
                 </li>
             </ul>
             <form class="d-flex">
