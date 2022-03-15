@@ -25,14 +25,11 @@ def logMeIn():
             # check if user exists
             user = User.query.filter_by(username=username).first()
 
-            if user is None or check_password_hash(user.password, password):
-                redirect(url_for('auth.logMeIn'))
-            # log them in
-            login_user(user, remember = remember_me)
-            return redirect(url_for('home'))
-
-
-
+            if user:
+                if check_password_hash(user.password, password):
+                    login_user(user, remember=remember_me)
+                    return redirect(url_for('home'))
+            return redirect(url_for('auth.logMeIn'))
     return render_template('login.html', form = form)
 
 @auth.route('/signup', methods=["GET", "POST"])
