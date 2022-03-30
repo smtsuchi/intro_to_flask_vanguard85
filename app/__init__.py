@@ -13,8 +13,12 @@ from .auth.routes import mail
 from flask_migrate import Migrate
 from flask_login import LoginManager
 
+# API CROSS ORIGIN IMPORT
+from flask_cors import CORS
+
 app  = Flask(__name__)
 login = LoginManager()
+CORS(app)
 
 @login.user_loader
 def load_user(user_id):

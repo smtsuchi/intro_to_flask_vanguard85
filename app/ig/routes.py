@@ -78,3 +78,19 @@ def deletePost(post_id):
     db.session.commit()
                
     return redirect(url_for('ig.posts'))
+
+
+# 
+# 
+#   API STARTS HERE
+# 
+#
+
+@ig.route('/api/posts')
+def apiPosts():
+    posts = Post.query.all()[::-1]
+    return {
+        'status': 'ok',
+        'total_results': len(posts),
+        'posts': [p.to_dict() for p in posts]
+        }
