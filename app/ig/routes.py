@@ -94,3 +94,17 @@ def apiPosts():
         'total_results': len(posts),
         'posts': [p.to_dict() for p in posts]
         }
+
+@ig.route('/api/posts/<int:post_id>')
+def apiSinglePost(post_id):
+    post = Post.query.filter_by(id=post_id).first()
+    if post is None:
+        return {
+            'status': 'not ok',
+            'total_results': 0,
+        }
+    return {
+        'status': 'ok',
+        'total_results': 1,
+        'post': post.to_dict()
+        }

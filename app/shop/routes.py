@@ -80,3 +80,34 @@ def createProduct():
         return render_template('create_product.html', form = form)
     else:
         return redirect(url_for('shop.allProducts'))   
+
+
+
+
+# 
+#  
+# API ROUTES
+# 
+#  
+@shop.route('/api/products')
+def apiProducts():
+    products = Product.query.all()
+    return {
+        "status": "ok",
+        "total_results": len(products),
+        'products': [p.to_dict() for p in products]
+    }
+
+@shop.route('/api/products/<int:product_id>')
+def apiSingleProduct(product_id):
+    product = Product.query.filter_by(id=product_id).first()
+    if product is None:
+        return {
+            'status': 'not ok',
+            'total_results': 0,
+        }
+    return {
+        'status': 'ok',
+        'total_results': 1,
+        'product': product.to_dict()
+        }
