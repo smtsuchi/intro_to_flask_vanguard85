@@ -5,7 +5,7 @@ from flask_login import current_user, login_required
 ig = Blueprint('ig', __name__, template_folder='ig_templates')
 
 from .forms import CreatePostForm, UpdatePostForm
-from app.models import db, Post
+from app.models import db, Post, User
 
 
 @ig.route('/posts')
@@ -108,3 +108,33 @@ def apiSinglePost(post_id):
         'total_results': 1,
         'post': post.to_dict()
         }
+
+
+@ig.route('/api/create-post', methods=["POST"])
+# @login_required
+def apiCreatePost():
+    data = request.json
+
+    title = data['title']
+    img_url = data['img_url']
+    caption = data['caption']
+    token = data['token']
+
+    user = User.query.filter_by(apitoken=token).first()
+
+    if user is None:
+        return {
+            'status': 'not ok',
+            'message': 'Invalid token.'
+        }
+
+    post = Post(title, img_url, caption, user.id)
+
+    db.session.add(post)
+    db.session.commit()   
+
+    return {
+        'status': 'ok',
+        'message': 'Successfully create a new post.',
+        'post': post.to_dict()
+    }

@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.security import generate_password_hash
 from flask_login import UserMixin
+from secrets import token_hex
 
 db = SQLAlchemy()
 
@@ -15,12 +16,22 @@ class User(db.Model, UserMixin):
     post = db.relationship('Post', backref='author', lazy=True)
     cart_item = db.relationship('Cart', backref='cart_user', lazy=True)
     is_admin = db.Column(db.Boolean, default=False)
+    apitoken = db.Column(db.String, default=None, nullable=True)
 
     def __init__(self, username, email, password, is_admin=False):
         self.username = username
         self.email = email
         self.password = generate_password_hash(password)
         self.is_admin=is_admin
+        self.apitoken = token_hex(16)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'username': self.username,
+            'token': self.apitoken
+        }
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
