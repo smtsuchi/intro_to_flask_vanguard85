@@ -88,7 +88,10 @@ def createProduct():
 #  
 # API ROUTES
 # 
+# 
 #  
+from app.apiauthhelper import token_required
+
 @shop.route('/api/products')
 def apiProducts():
     products = Product.query.all()
@@ -111,3 +114,77 @@ def apiSingleProduct(product_id):
         'total_results': 1,
         'product': product.to_dict()
         }
+
+
+@shop.route('/api/cart/get')
+@token_required
+def getCartAPI(user):
+    cart = Cart.query.filter_by(user_id=user.id)
+    myCart = [Product.query.filter_by(id=item.product_id).first().to_dict() for item in cart]
+    return {
+        'status': 'ok',
+        'cart': myCart
+    }
+
+@shop.route('/api/cart/add', methods=["POST"])
+@token_required
+def addToCartAPI(user):
+    data = request.json
+
+    product_id = data['product_id']
+
+    newCartItem = Cart(user.id, product_id)
+    
+    db.session.add(newCartItem)
+    db.session.commit()
+
+    return {
+        'status': 'ok',
+        'message': "Successfully added item to cart!"
+    }
+
+@shop.route('/api/cart/remove', methods=["POST"])
+@token_required
+def removeFromCartAPI(user):
+    data = request.json
+    
+    product_id = data['product_id']
+
+    cartItem = Cart.query.filter_by(user_id=user.id).filter_by(product_id=product_id).first()
+
+    if cartItem:
+        db.session.delete(cartItem)
+        db.session.commit()
+        return {
+            'status': 'ok',
+            'message': "Successfully removed item from cart."
+        }
+    return {
+        'status': 'not ok',
+        'message': 'That item does not exists in your cart.'
+    }
+
+import stripe
+import os
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+
+@shop.route('/api/stripe/create-checkout-session', methods=["POST"])
+def createCheckoutSession():
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            line_items=[
+                {
+                    # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+                    'price': 'price_1JpbJLDTfh3G5wtDtecdGTdJ',
+                    'quantity': 1,
+                },
+            ],
+            mode='subscription',
+            success_url='http://localhost:3000/' + '?success=true',
+            cancel_url='http://localhost:3000/stripe/shop' + '?canceled=true',
+        )
+
+    except Exception as e:
+        return str(e)
+
+    return redirect(checkout_session.url, code=303)

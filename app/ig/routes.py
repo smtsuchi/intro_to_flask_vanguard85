@@ -1,6 +1,8 @@
 from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+from app.apiauthhelper import token_required
+
 
 ig = Blueprint('ig', __name__, template_folder='ig_templates')
 
@@ -111,22 +113,13 @@ def apiSinglePost(post_id):
 
 
 @ig.route('/api/create-post', methods=["POST"])
-# @login_required
-def apiCreatePost():
+@token_required
+def apiCreatePost(user):
     data = request.json
 
     title = data['title']
     img_url = data['img_url']
     caption = data['caption']
-    token = data['token']
-
-    user = User.query.filter_by(apitoken=token).first()
-
-    if user is None:
-        return {
-            'status': 'not ok',
-            'message': 'Invalid token.'
-        }
 
     post = Post(title, img_url, caption, user.id)
 
